@@ -6,8 +6,14 @@
 
 #from board import board
 from player import player
+import sys
 import tkinter as tk
 import tkinter.ttk as ttk
+from tkinter import messagebox as ms
+
+# Trivia:
+# "# *** something *** #" means a Main Component like GUI, Functionality etc.
+# "# --- something --- #" means a Subset of functions contained in a Main Component 
 
 
 class TicTacToe():
@@ -19,8 +25,10 @@ class TicTacToe():
 
         attributes:
         instance - Board - An instance of the Board class to represent the games board
-        Bool - game_running - Flag if the game still runs or if it is over
-        dict - switch - A self build switch to convert the numbers 1-9 to their corosponding coordinates"""
+        dict - switch - A self build switch to convert the numbers 1-9 to their corosponding coordinates
+        Bool - board_init_true - Shows if board is already initialised. If so, only change it, dont init it again"""
+
+        self.board_init_true = False
 
         # used later to make it easier for the Player to choose a field
         self.switch = {
@@ -37,18 +45,15 @@ class TicTacToe():
         # Start the game
         self.multiplayer()
 
-    # ---------- Board ----------
+
+    # ******************** GUI ******************** #
     def init_Board(self):
         self.grid = [[" ", " ", " "], [" ", " ", " "], [" ", " ", " "]]
-
-        # only for test - DELETE
-        player_symbol = "x"
-
-        # --- GUI --- #
+        
         win = tk.Tk()
         win.title("TicTacToe")
 
-        # --- Button-Stringvalues #
+        # -------------------- Button-Stringvalues -------------------- #
         self.button_1_text = tk.StringVar()
         self.button_1_text.set(self.grid[0][0])
 
@@ -76,49 +81,55 @@ class TicTacToe():
         self.button_9_text = tk.StringVar()
         self.button_9_text.set(self.grid[2][2])
 
-        # --- Actual Buttons --- #
+        # -------------------- Actual Buttons -------------------- #
         # row 1
         self.button_1 = ttk.Button(
-            win, textvariable=self.button_1_text, command=lambda: self.on_press(1, player_symbol))
+            win, textvariable=self.button_1_text, command=lambda: self.on_press(1))
         self.button_1.grid(row=0, column=0)
 
         self.button_2 = ttk.Button(
-            win, textvariable=self.button_2_text, command=lambda: self.on_press(2, player_symbol))
+            win, textvariable=self.button_2_text, command=lambda: self.on_press(2))
         self.button_2.grid(row=0, column=1)
 
         self.button_3 = ttk.Button(
-            win, textvariable=self.button_3_text, command=lambda: self.on_press(3, player_symbol))
+            win, textvariable=self.button_3_text, command=lambda: self.on_press(3))
         self.button_3.grid(row=0, column=2)
         # row 2
         self.button_4 = ttk.Button(
-            win, textvariable=self.button_4_text, command=lambda: self.on_press(4, player_symbol))
+            win, textvariable=self.button_4_text, command=lambda: self.on_press(4))
         self.button_4.grid(row=1, column=0)
 
         self.button_5 = ttk.Button(
-            win, textvariable=self.button_5_text, command=lambda: self.on_press(5, player_symbol))
+            win, textvariable=self.button_5_text, command=lambda: self.on_press(5))
         self.button_5.grid(row=1, column=1)
 
         self.button_6 = ttk.Button(
-            win, textvariable=self.button_6_text, command=lambda: self.on_press(6, player_symbol))
+            win, textvariable=self.button_6_text, command=lambda: self.on_press(6))
         self.button_6.grid(row=1, column=2)
         # row 3
         self.button_7 = ttk.Button(
-            win, textvariable=self.button_7_text, command=lambda: self.on_press(7, player_symbol))
+            win, textvariable=self.button_7_text, command=lambda: self.on_press(7))
         self.button_7.grid(row=2, column=0)
 
         self.button_8 = ttk.Button(
-            win, textvariable=self.button_8_text, command=lambda: self.on_press(8, player_symbol))
+            win, textvariable=self.button_8_text, command=lambda: self.on_press(8))
         self.button_8.grid(row=2, column=1)
 
         self.button_9 = ttk.Button(
-            win, textvariable=self.button_9_text, command=lambda: self.on_press(9, player_symbol))
+            win, textvariable=self.button_9_text, command=lambda: self.on_press(9))
         self.button_9.grid(row=2, column=2)
 
+        self.board_init_true = True
         win.mainloop()
 
-    def on_press(self, num, player_symbol):
-        # num = number of squares clicked
-        # player_symbol = X or O, the players Symbol that should be put in the square
+
+    def on_press(self, num):
+        """
+        Inserts players Symbol into the clicked square
+
+        int - num = number of the clicked square
+        string - current_player.symbol = X or O, the players Symbol that should be put in the square
+        """
         if num == 1 and self.grid[0][0] == " ":
             self.grid[0][0] = self.current_player.symbol
             self.button_1_text.set(self.grid[0][0])
@@ -156,6 +167,8 @@ class TicTacToe():
             self.button_9_text.set(self.grid[2][2])
             self.evaluate_turn()
 
+
+    # ******************** Multiplayer ******************** #
     def multiplayer(self):
         """Setup to represent the game with 2 human players
 
@@ -170,28 +183,54 @@ class TicTacToe():
         self.current_player = self.Player1
         self.Turn_count = 0
         # Setup Board
-        self.init_Board()
+        if self.board_init_true == False:
+            self.init_Board()
+        
 
-    # ------------------------- Main Game --------------------------
-    ##### Fuck the main game loop, we have the main loop of the GUI, use that #####
 
+    def multiplayer_play_again(self):
+        """Used to play again. Reset the Gamestate to the beginning of a new game"""
+        self.grid = [[" ", " ", " "], [" ", " ", " "], [" ", " ", " "]]
+
+        self.button_1_text.set(self.grid[0][0])
+        self.button_2_text.set(self.grid[0][0])
+        self.button_3_text.set(self.grid[0][0])
+        self.button_4_text.set(self.grid[0][0])
+        self.button_5_text.set(self.grid[0][0])
+        self.button_6_text.set(self.grid[0][0])
+        self.button_7_text.set(self.grid[0][0])
+        self.button_8_text.set(self.grid[0][0])
+        self.button_9_text.set(self.grid[0][0])
+
+        self.multiplayer()
+
+
+    # ******************** Functionality ******************** #
     def evaluate_turn(self):
-        """ put the functiponality here """
+        """ Reacts to the game Ending states """
 
-        # If someone has one, end the game
         self.Turn_count += 1
 
         if self.Turn_count == 9:
             pass
+            result = ms.askquestion(title="Draw!", message="Draw!\nDo you want to play again?")
+            if result == "yes":
+                self.multiplayer_play_again()
+            else:
+                sys.exit(0)
             ##### give out Draw in the GUI #####
         elif self.check_for_win():
             ##### give out the current Player and show, that he has won #####
-            print(f"{self.current_player.name} has won!")
+            result = ms.askquestion(title=f"{self.current_player.symbol} won", message=f"{self.current_player.symbol} has won\nDo you want to play again?")
+            if result == "yes":
+                self.multiplayer_play_again()
+            else:
+                sys.exit(0)
         else:
             # Switch to the other Players turn
             self.set_current_player()
 
-    # ---------------------------------------------- Fuctionality -------------------------------
+
     def check_for_win(self):
         """
         Checks if Someone won the game
@@ -223,6 +262,7 @@ class TicTacToe():
         else:
             return False
 
+
     def set_current_player(self):
         """Switches the current player
 
@@ -240,6 +280,9 @@ class TicTacToe():
             self.Player1.turn = True
             self.Player2.turn = False
             self.current_player = self.Player1
+
+    
+
 
 
 game = TicTacToe()
